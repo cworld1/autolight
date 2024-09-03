@@ -5,7 +5,7 @@ Tiny Windows program that turns on/off dark theme at sunrise/sunset.
 ## Installation
 
 You can download the pre-built binary for the latest release on the
-[GitHub releases page](https://github.com/nasso/autolight/releases). You can put
+[GitHub releases page](https://github.com/cworld1/autolight/releases). You can put
 it anywhere you want on your computer. You can also build from source with
 `cargo` if you prefer (see [Building](#building) below).
 
@@ -27,7 +27,7 @@ applied automatically.
 
 ### Example configuration
 
-#### _%USERPROFILE%\\.autolight.toml_
+#### _%USERPROFILE%/.config/autolight/config.toml_
 
 ```toml
 # Set this to `true` to terminate the process immediately
@@ -72,12 +72,6 @@ Just run the executable. It runs in the background. Everything else happens in
 the configuration file.
 
 To stop the process, set `disable = true` in the configuration file.
-
-## Changelog
-
-### v0.1.0
-
-- Initial release
 
 ## License
 
