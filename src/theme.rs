@@ -1,4 +1,7 @@
-use crate::{regkey::{RegistryKey, RegistryPermission}, refresh::refresh_windows};
+use crate::{
+    refresh::refresh_windows,
+    regkey::{RegistryKey, RegistryPermission},
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ThemeVariant {

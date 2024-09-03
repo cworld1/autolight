@@ -11,8 +11,8 @@ use windows::{
     Win32::{
         Foundation::ERROR_SUCCESS,
         System::Registry::{
-            RegCloseKey, RegCreateKeyExW, RegSetValueExW, HKEY, HKEY_CURRENT_USER, KEY_WRITE,
-            REG_DWORD, REG_OPTION_NON_VOLATILE, RegGetValueW, RRF_RT_DWORD, KEY_QUERY_VALUE,
+            RegCloseKey, RegCreateKeyExW, RegGetValueW, RegSetValueExW, HKEY, HKEY_CURRENT_USER,
+            KEY_QUERY_VALUE, KEY_WRITE, REG_DWORD, REG_OPTION_NON_VOLATILE, RRF_RT_DWORD,
         },
     },
 };
@@ -30,7 +30,7 @@ pub struct RegistryKey {
 pub enum RegistryPermission {
     Read,
     Write,
-    ReadWrite
+    ReadWrite,
 }
 
 impl RegistryKey {
@@ -39,13 +39,17 @@ impl RegistryKey {
         hkey: HKEY_CURRENT_USER,
     };
 
-    pub fn open_or_create(parent_key: &Self, sub_key: &str, permission: RegistryPermission) -> Self {
+    pub fn open_or_create(
+        parent_key: &Self,
+        sub_key: &str,
+        permission: RegistryPermission,
+    ) -> Self {
         let mut hkey = HKEY::default();
 
         let sam_permissions = match permission {
             RegistryPermission::ReadWrite => KEY_WRITE | KEY_QUERY_VALUE,
             RegistryPermission::Read => KEY_QUERY_VALUE,
-            RegistryPermission::Write => KEY_WRITE
+            RegistryPermission::Write => KEY_WRITE,
         };
 
         let status = unsafe {
@@ -81,8 +85,8 @@ impl RegistryKey {
                 PCWSTR(os_str(value).as_ptr()),
                 RRF_RT_DWORD,
                 null_mut(),
-                transmute(&mut data as *mut u32),
-                transmute(&mut size as *mut u32),
+                transmute::<*mut u32, *mut std::ffi::c_void>(&mut data as *mut u32),
+                &mut size as *mut u32,
             )
         };
 
@@ -98,7 +102,7 @@ impl RegistryKey {
                 PCWSTR(os_str(value).as_ptr()),
                 0,
                 REG_DWORD,
-                transmute(&data as *const u32),
+                transmute::<*const u32, *const u8>(&data as *const u32),
                 size_of::<u32>() as u32,
             )
         };

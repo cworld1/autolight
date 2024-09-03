@@ -1,33 +1,21 @@
 use std::{
-    os::windows::prelude::OsStrExt,
-    ffi::OsStr,
-    thread::sleep,
+    ffi::OsStr, iter::once, os::windows::prelude::OsStrExt, ptr::null_mut, thread::sleep,
     time::Duration,
-    ptr::null_mut,
-    iter::once
 };
 
 use windows::Win32::{
-    Foundation::{
-        HWND,
-        LPARAM,
-        WPARAM,
-        BOOL, HANDLE, HINSTANCE, CloseHandle
+    Foundation::{CloseHandle, BOOL, HWND, LPARAM, WPARAM},
+    System::Threading::{
+        OpenProcess, QueryFullProcessImageNameW, PROCESS_NAME_FORMAT, PROCESS_QUERY_INFORMATION,
+        PROCESS_VM_READ,
     },
     UI::WindowsAndMessaging::{
-        WM_THEMECHANGED,
-        EnumWindows,
-        WM_SETTINGCHANGE,
-        SendMessageTimeoutW,
-        SMTO_NORMAL,
-        SMTO_NOTIMEOUTIFNOTHUNG, GetWindowThreadProcessId
-    }, System::{Threading::{OpenProcess, PROCESS_QUERY_INFORMATION, PROCESS_VM_READ, QueryFullProcessImageNameW, PROCESS_NAME_FORMAT}, ProcessStatus::{K32GetModuleFileNameExW, K32GetModuleBaseNameW, K32GetProcessImageFileNameW}}
+        EnumWindows, GetWindowThreadProcessId, SendMessageTimeoutW, SMTO_NORMAL,
+        SMTO_NOTIMEOUTIFNOTHUNG, WM_SETTINGCHANGE, WM_THEMECHANGED,
+    },
 };
 
-use crate::regkey::{
-    RegistryKey,
-    RegistryPermission
-};
+use crate::regkey::{RegistryKey, RegistryPermission};
 
 fn os_str(value: &str) -> Vec<u16> {
     OsStr::new(value).encode_wide().chain(once(0)).collect()
@@ -40,11 +28,11 @@ pub fn get_process_name(hwnd: HWND) -> Option<String> {
         if GetWindowThreadProcessId(hwnd, &mut process_id as *mut u32) == 0 {
             return None;
         }
-        
+
         let Ok(process) = OpenProcess(
             PROCESS_QUERY_INFORMATION | PROCESS_VM_READ,
             false,
-            process_id
+            process_id,
         ) else {
             return None;
         };
@@ -56,8 +44,9 @@ pub fn get_process_name(hwnd: HWND) -> Option<String> {
             process,
             PROCESS_NAME_FORMAT(0),
             windows::core::PWSTR(&mut process_name as *mut u16),
-            &mut length
-        ).as_bool();
+            &mut length,
+        )
+        .as_bool();
         CloseHandle(process);
 
         if has_image_name {
@@ -70,9 +59,7 @@ pub fn get_process_name(hwnd: HWND) -> Option<String> {
 
 unsafe extern "system" fn refresh_window_callback(hwnd: HWND, _: LPARAM) -> BOOL {
     // these processes are known to require refreshes
-    let whitelist = vec![
-        "explorer.exe"
-    ];
+    let whitelist = ["explorer.exe"];
 
     let Some(process_name) = get_process_name(hwnd) else {
         return BOOL(1);
@@ -86,9 +73,9 @@ unsafe extern "system" fn refresh_window_callback(hwnd: HWND, _: LPARAM) -> BOOL
             LPARAM(os_str("ImmersiveColorSet").as_ptr() as isize),
             SMTO_NORMAL | SMTO_NOTIMEOUTIFNOTHUNG,
             200,
-            null_mut()
+            null_mut(),
         );
-    
+
         SendMessageTimeoutW(
             hwnd,
             WM_THEMECHANGED,
@@ -96,10 +83,10 @@ unsafe extern "system" fn refresh_window_callback(hwnd: HWND, _: LPARAM) -> BOOL
             LPARAM(0),
             SMTO_NORMAL | SMTO_NOTIMEOUTIFNOTHUNG,
             200,
-            null_mut()
+            null_mut(),
         );
     }
-    
+
     BOOL(1)
 }
 

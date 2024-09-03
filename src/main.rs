@@ -3,9 +3,9 @@
 use chrono::Local;
 use notification::notify;
 mod notification;
+mod refresh;
 mod regkey;
 mod theme;
-mod refresh;
 
 use {
     chrono::{Datelike, Duration},
