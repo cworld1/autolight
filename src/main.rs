@@ -56,7 +56,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     })?;
 
     let mut hotwatch = Hotwatch::new()?;
-    let config_file_path = Path::new(&env::var("USERPROFILE")?).join(".autolight.toml");
+    let config_file_path =
+        Path::new(&env::var("USERPROFILE")?).join(".config/autolight/config.toml");
 
     if !config_file_path.is_file() {
         notify("Error", "Couldn't find the configuration file. Exiting...");
